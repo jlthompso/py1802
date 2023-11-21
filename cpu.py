@@ -1,11 +1,11 @@
-from enum import Enum
+from abc import ABC, abstractmethod
 
 
 class CPU:
+    _state = None
+
     def __init__(self):
-        # power on into RESET mode
-        self.CLEAR = 0
-        self.WAIT = 1
+        self.set_state(Reset())
 
         # setup registers
         self.D = 0x00           # Data Register (Accumulator), 8b
@@ -20,23 +20,36 @@ class CPU:
         self.IE = 1             # Interrupt Enable, 1b
         self.Q = 0              # Output Flip-Flop, 1b
 
-    def set_control_mode(self, mode):
-        self.CLEAR, self.WAIT = mode.value & 0x02, mode.value & 0x01
-
-        match mode:
-            case ControlMode.RESET:
-                self.I = 0x0
-                self.N = 0x0
-                self.Q = 0
-                self.IE = 1
+    def set_state(self, state):
+        self._state = state
+        self._state.cpu = self
 
     def tick(self):
-        if self.CLEAR | self.WAIT == ControlMode.RUN.value:
-            self.R[self.P] = (self.R[self.P] + 1) % 0xFF
+        self._state.tick()
 
 
-class ControlMode(Enum):
-    LOAD = 0
-    RESET = 1
-    PAUSE = 2
-    RUN = 3
+class State(ABC):
+    @property
+    def cpu(self):
+        return self._cpu
+
+    @cpu.setter
+    def cpu(self, cpu):
+        self._cpu = cpu
+
+    @abstractmethod
+    def tick(self):
+        pass
+
+
+class Reset(State):
+    def tick(self):
+        self.cpu.I = 0x0
+        self.cpu.N = 0x0
+        self.cpu.Q = 0
+        self.cpu.IE = 1
+
+
+class Run(State):
+    def tick(self):
+        self.cpu.R[self.cpu.P] = (self.cpu.R[self.cpu.P] + 1) % 0xFFFF
