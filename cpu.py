@@ -1,10 +1,12 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import Optional
 
 
 class CPU:
-    _state = None
+    _state: State = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.set_state(Reset())
 
         # setup registers
@@ -20,36 +22,39 @@ class CPU:
         self.IE = 1             # Interrupt Enable, 1b
         self.Q = 0              # Output Flip-Flop, 1b
 
-    def set_state(self, state):
+    def set_state(self, state: State) -> None:
         self._state = state
-        self._state.cpu = self
+        self._state.context = self
 
-    def tick(self):
+    def tick(self) -> None:
         self._state.tick()
 
 
 class State(ABC):
-    @property
-    def cpu(self):
-        return self._cpu
+    def __init__(self) -> None:
+        self._context: Optional[CPU] = None
 
-    @cpu.setter
-    def cpu(self, cpu):
-        self._cpu = cpu
+    @property
+    def context(self) -> CPU:
+        return self._context
+
+    @context.setter
+    def context(self, context: CPU) -> None:
+        self._context = context
 
     @abstractmethod
-    def tick(self):
+    def tick(self) -> None:
         pass
 
 
 class Reset(State):
-    def tick(self):
-        self.cpu.I = 0x0
-        self.cpu.N = 0x0
-        self.cpu.Q = 0
-        self.cpu.IE = 1
+    def tick(self) -> None:
+        self.context.I = 0x0
+        self.context.N = 0x0
+        self.context.Q = 0
+        self.context.IE = 1
 
 
 class Run(State):
-    def tick(self):
-        self.cpu.R[self.cpu.P] = (self.cpu.R[self.cpu.P] + 1) % 0xFFFF
+    def tick(self) -> None:
+        self.context.R[self.context.P] = (self.context.R[self.context.P] + 1) % 0xFFFF
