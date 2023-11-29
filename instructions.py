@@ -5,6 +5,20 @@ if TYPE_CHECKING:
     from cpu import CPU
 
 
+def decode(cpu: CPU, I: int, N: int):
+    match I, N:
+        case 0x0, 0x0:
+            IDL(cpu)
+        case 0x0, N:
+            LDN(cpu, N)
+        case 0x1, N:
+            INC(cpu, N)
+        case 0xC, 0x4:
+            NOP(cpu)
+        case _, _:
+            raise NotImplementedError("Attempted to execute invalid instruction.")
+
+
 def IDL(cpu: CPU):
     # Idle (0x00):
     #   M(R(0))-->BUS

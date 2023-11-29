@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from instructions import *
+from instructions import decode
 from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from cpu import CPU
@@ -37,12 +37,7 @@ class State(ABC):
 
 class Execute(State):
     def tick(self) -> None:
-        match self.context.I, self.context.N:
-            case 0x0, 0x0: IDL(self.context)
-            case 0x0, N: LDN(self.context, N)
-            case 0x1, N: INC(self.context, N)
-            case 0xC, 0x4: NOP(self.context)
-            case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
+        decode(self.context, self.context.I, self.context.N)
 
     def reset(self) -> None:
         self.context.set_state(Reset())
