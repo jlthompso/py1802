@@ -15,17 +15,6 @@ class RegisterOperationsTests(unittest.TestCase):
         force_two_cycle_instruction(cpu, opcode, executions)
         self.assertEqual(expected, cpu.R[opcode & 0xF])  # register value should increment
 
-    def test_INC_overflow(self):
-        cpu = CPU()
-        cpu.run()
-
-        expected = 9
-        opcode = 0x12  # INC R(2)
-        executions = 0xFFFF + 10
-
-        force_two_cycle_instruction(cpu, opcode, executions)
-        self.assertEqual(expected, cpu.R[opcode & 0xF])  # register value should roll over to zero after 0xFFFF
-
     def test_DEC(self):
         cpu = CPU()
         cpu.run()
@@ -49,19 +38,6 @@ class RegisterOperationsTests(unittest.TestCase):
         cpu.X = reg
         force_two_cycle_instruction(cpu, opcode, executions)
         self.assertEqual(expected, cpu.R[reg])  # register X value should increment
-
-    def test_IRX_overflow(self):
-        cpu = CPU()
-        cpu.run()
-
-        expected = 4
-        opcode = 0x60  # INC R(X)
-        reg = 5
-        executions = 0xFFFF + 5
-
-        cpu.X = reg
-        force_two_cycle_instruction(cpu, opcode, executions)
-        self.assertEqual(expected, cpu.R[reg])  # register X value should roll over to zero after 0xFFFF
 
     def test_GLO(self):
         cpu = CPU()

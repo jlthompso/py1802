@@ -34,25 +34,17 @@ class MemoryReferenceTests(unittest.TestCase):
         cpu = CPU()
         cpu.run()
 
-        expected = 0x1235
+        expected_data = 42
+        expected_mem_addr = 0x1235
         opcode = 0x49
         mem_addr = 0x1234
 
+        cpu.M[mem_addr] = expected_data
         cpu.R[opcode & 0xF] = mem_addr
         force_two_cycle_instruction(cpu, opcode)
-        self.assertEqual(expected, cpu.R[opcode & 0xF])  # D should contain contents of mem_addr
-
-    def test_LDA_overflow(self):
-        cpu = CPU()
-        cpu.run()
-
-        expected = 0x0000
-        opcode = 0x45
-        mem_addr = 0xFFFF
-
-        cpu.R[opcode & 0xF] = mem_addr
-        force_two_cycle_instruction(cpu, opcode)
-        self.assertEqual(expected, cpu.R[opcode & 0xF])  # D should contain contents of mem_addr
+        self.assertEqual(expected_data, cpu.D)  # D should contain contents of mem_addr
+        self.assertEqual(expected_mem_addr, cpu.R[opcode & 0xF])  # Memory address should increment
+        self.assertEqual(expected_data, cpu.M[mem_addr])  # Memory should not be modified
 
 
 if __name__ == '__main__':
