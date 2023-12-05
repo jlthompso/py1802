@@ -19,7 +19,7 @@ class RegisterOperationsTests(unittest.TestCase):
         cpu = CPU()
         cpu.run()
 
-        expected = 10
+        expected = 9
         opcode = 0x12  # INC R(2)
         executions = 0xFFFF + 10
 
@@ -54,7 +54,7 @@ class RegisterOperationsTests(unittest.TestCase):
         cpu = CPU()
         cpu.run()
 
-        expected = 5
+        expected = 4
         opcode = 0x60  # INC R(X)
         reg = 5
         executions = 0xFFFF + 5

@@ -43,3 +43,11 @@ class CPU:
 
     def pause(self) -> None:
         self._state.pause()
+
+    def increment_register(self, reg: int) -> None:
+        # 0xFFFF + 1 = 0x000
+        self.R[reg] = (self.R[reg] + 1) % 0x10000
+
+    def decrement_register(self, reg: int) -> None:
+        # 0x0000 - 1 = 0xFFFF
+        self.R[reg] = self.R[reg] - 1 if self.R[reg] - 1 >= 0 else 0xFFFF

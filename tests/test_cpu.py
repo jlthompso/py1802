@@ -20,7 +20,7 @@ class InternalTests(unittest.TestCase):
         cpu = CPU()
         cpu.run()
 
-        expected = 5
+        expected = 4
         opcode = 0xC4  # NOP
         pc_reg = 1
         executions = 0xFFFF + 5

@@ -56,7 +56,7 @@ class Fetch(State):
         opcode = self.context.M[self.context.R[self.context.P]]
         self.context.I = (opcode >> 4) & 0x0F
         self.context.N = opcode & 0x0F
-        self.context.R[self.context.P] = (self.context.R[self.context.P] + 1) % 0xFFFF  # increment program counter
+        self.context.increment_register(self.context.P)  # increment program counter
         self.context.set_state(Execute())
 
     def reset(self) -> None:
