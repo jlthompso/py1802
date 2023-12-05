@@ -65,7 +65,7 @@ def GLO(cpu: CPU, N: int):
 def LDN(cpu: CPU, N: int):
     # Load via N (0x0N):
     #   M(R(N))-->D (for N>0)
-    cpu.D = cpu.R[N]
+    cpu.D = cpu.M[cpu.R[N]] & 0xFF
     cpu.set_state(states.Fetch())
 
 
