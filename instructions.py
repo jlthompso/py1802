@@ -16,11 +16,15 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x6, 0x0:  IRX(cpu)
         case 0x7, 0x2:  LDXA(cpu)
         case 0x7, 0x3:  STXD(cpu)
+        case 0x7, 0xA:  REQ(cpu)
+        case 0x7, 0xB:  SEQ(cpu)
         case 0x8, N:    GLO(cpu, N)
         case 0x9, N:    GHI(cpu, N)
         case 0xA, N:    PLO(cpu, N)
         case 0xB, N:    PHI(cpu, N)
         case 0xC, 0x4:  NOP(cpu)
+        case 0xD, N:    SEP(cpu, N)
+        case 0xE, N:    SEX(cpu, N)
         case 0xF, 0x0:  LDX(cpu)
         case 0xF, 0x8:  LDI(cpu)
         case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
@@ -123,6 +127,34 @@ def NOP(cpu: CPU):
     # No Operation (0xC4):
     #   CONTINUE
     cpu.set_state(states.ForceExecute())
+
+
+def REQ(cpu: CPU):
+    # Reset Q (0x7A)
+    #   0-->Q
+    cpu.Q = 0
+    cpu.set_state(states.Fetch())
+
+
+def SEP(cpu: CPU, N: int):
+    # Set P (0xDN)
+    #   N-->P
+    cpu.P = N
+    cpu.set_state(states.Fetch())
+
+
+def SEQ(cpu: CPU):
+    # Set Q (0x7B)
+    #   1-->Q
+    cpu.Q = 1
+    cpu.set_state(states.Fetch())
+
+
+def SEX(cpu: CPU, N: int):
+    # Set X (0xEN)
+    #   N-->X
+    cpu.X = N
+    cpu.set_state(states.Fetch())
 
 
 def STR(cpu: CPU, N: int):
