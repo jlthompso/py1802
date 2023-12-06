@@ -1,6 +1,7 @@
 import unittest
 from cpu import CPU
-from common_test_functions import force_two_cycle_instruction
+from common_test_functions import force_three_cycle_instruction
+from states import Fetch
 
 
 class InternalTests(unittest.TestCase):
@@ -13,8 +14,9 @@ class InternalTests(unittest.TestCase):
         pc_reg = 0
         executions = 5
 
-        force_two_cycle_instruction(cpu, opcode, executions)
+        force_three_cycle_instruction(cpu, opcode, executions)
         self.assertEqual(expected, cpu.R[pc_reg])  # PC should increment for each fetch
+        self.assertIsInstance(cpu._state, Fetch)  # CPU should be in S0
 
     def test_increment_register(self):
         cpu = CPU()

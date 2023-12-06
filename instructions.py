@@ -12,12 +12,17 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x1, N:    INC(cpu, N)
         case 0x2, N:    DEC(cpu, N)
         case 0x4, N:    LDA(cpu, N)
+        case 0x5, N:    STR(cpu, N)
         case 0x6, 0x0:  IRX(cpu)
+        case 0x7, 0x2:  LDXA(cpu)
+        case 0x7, 0x3:  STXD(cpu)
         case 0x8, N:    GLO(cpu, N)
         case 0x9, N:    GHI(cpu, N)
         case 0xA, N:    PLO(cpu, N)
         case 0xB, N:    PHI(cpu, N)
         case 0xC, 0x4:  NOP(cpu)
+        case 0xF, 0x0:  LDX(cpu)
+        case 0xF, 0x8:  LDI(cpu)
         case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
 
 
@@ -70,10 +75,33 @@ def LDA(cpu: CPU, N: int):
     cpu.set_state(states.Fetch())
 
 
+def LDI(cpu: CPU):
+    # Load Immediate (0xF8)
+    #   M(R(P))-->D; R(P)+1
+    cpu.D = cpu.M[cpu.R[cpu.P]]
+    cpu.R[cpu.P] += 1
+    cpu.set_state(states.Fetch())
+
+
 def LDN(cpu: CPU, N: int):
     # Load via N (0x0N):
     #   M(R(N))-->D (for N>0)
     cpu.D = cpu.M[cpu.R[N]]
+    cpu.set_state(states.Fetch())
+
+
+def LDX(cpu: CPU):
+    # Load via X (0xF0):
+    #   M(R(X))-->D
+    cpu.D = cpu.M[cpu.R[cpu.X]]
+    cpu.set_state(states.Fetch())
+
+
+def LDXA(cpu: CPU):
+    # Load via X and Advance (0x72):
+    #   M(R(X))-->D; R(X)+1
+    cpu.D = cpu.M[cpu.R[cpu.X]]
+    cpu.increment_register(cpu.X)
     cpu.set_state(states.Fetch())
 
 
@@ -95,6 +123,18 @@ def NOP(cpu: CPU):
     # No Operation (0xC4):
     #   CONTINUE
     cpu.set_state(states.ForceExecute())
-    cpu.tick()
 
 
+def STR(cpu: CPU, N: int):
+    # Store via N (0x5N)
+    #   D-->M(R(N))
+    cpu.M[cpu.R[N]] = cpu.D
+    cpu.set_state(states.Fetch())
+
+
+def STXD(cpu: CPU):
+    # Store via X and Decrement (0x73)
+    #   D-->M(R(X)); R(X)-1
+    cpu.M[cpu.R[cpu.X]] = cpu.D
+    cpu.decrement_register(cpu.X)
+    cpu.set_state(states.Fetch())

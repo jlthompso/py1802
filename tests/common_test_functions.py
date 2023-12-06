@@ -9,3 +9,9 @@ def force_two_cycle_instruction(cpu: CPU, opcode: int, repeat: int = 1):
         cpu.tick()  # fetch
         cpu.I, cpu.N = (opcode >> 4) & 0xF, opcode & 0xF  # overwrite fetched instruction
         cpu.tick()  # execute
+
+
+def force_three_cycle_instruction(cpu: CPU, opcode: int, repeat: int = 1):
+    for _ in range(repeat):
+        force_two_cycle_instruction(cpu, opcode)
+        cpu.tick()  # execute
