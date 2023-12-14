@@ -16,8 +16,10 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x6, 0x0:  IRX(cpu)
         case 0x7, 0x2:  LDXA(cpu)
         case 0x7, 0x3:  STXD(cpu)
+        case 0x7, 0x6:  SHRC(cpu)
         case 0x7, 0xA:  REQ(cpu)
         case 0x7, 0xB:  SEQ(cpu)
+        case 0x7, 0xE:  SHLC(cpu)
         case 0x8, N:    GLO(cpu, N)
         case 0x9, N:    GHI(cpu, N)
         case 0xA, N:    PLO(cpu, N)
@@ -26,8 +28,31 @@ def decode(cpu: CPU, I: int, N: int):
         case 0xD, N:    SEP(cpu, N)
         case 0xE, N:    SEX(cpu, N)
         case 0xF, 0x0:  LDX(cpu)
+        case 0xF, 0x1:  OR(cpu)
+        case 0xF, 0x2:  AND(cpu)
+        case 0xF, 0x3:  XOR(cpu)
+        case 0xF, 0x6:  SHR(cpu)
         case 0xF, 0x8:  LDI(cpu)
+        case 0xF, 0x9:  ORI(cpu)
+        case 0xF, 0xA:  ANI(cpu)
+        case 0xF, 0xB:  XRI(cpu)
+        case 0xF, 0xE:  SHL(cpu)
         case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
+
+
+def AND(cpu: CPU):
+    # AND (0xF2)
+    #   M(R(X)) AND D-->D
+    cpu.D &= cpu.M[cpu.R[cpu.X]]
+    cpu.set_state(states.Fetch())
+
+
+def ANI(cpu: CPU):
+    # ANI (0xFA)
+    #   M(R(P)) AND D-->R(P)+1
+    cpu.D &= cpu.M[cpu.R[cpu.P]]
+    cpu.increment_register(cpu.P)
+    cpu.set_state(states.Fetch())
 
 
 def DEC(cpu: CPU, N: int):
@@ -109,6 +134,27 @@ def LDXA(cpu: CPU):
     cpu.set_state(states.Fetch())
 
 
+def NOP(cpu: CPU):
+    # No Operation (0xC4):
+    #   CONTINUE
+    cpu.set_state(states.ForceExecute())
+
+
+def OR(cpu: CPU):
+    # OR (0xF1)
+    #   M(R(X)) OR D-->D
+    cpu.D |= cpu.M[cpu.R[cpu.X]]
+    cpu.set_state(states.Fetch())
+
+
+def ORI(cpu: CPU):
+    # ORI (0xF9)
+    #   M(R(P)) OR D-->R(P)+1
+    cpu.D |= cpu.M[cpu.R[cpu.P]]
+    cpu.increment_register(cpu.P)
+    cpu.set_state(states.Fetch())
+
+
 def PHI(cpu: CPU, N: int):
     # Put High Register N
     #   D-->R(N).1
@@ -121,12 +167,6 @@ def PLO(cpu: CPU, N: int):
     #   D-->R(N).0
     cpu.R[N] &= 0xFF00 + cpu.D
     cpu.set_state(states.Fetch())
-
-
-def NOP(cpu: CPU):
-    # No Operation (0xC4):
-    #   CONTINUE
-    cpu.set_state(states.ForceExecute())
 
 
 def REQ(cpu: CPU):
@@ -157,6 +197,40 @@ def SEX(cpu: CPU, N: int):
     cpu.set_state(states.Fetch())
 
 
+def SHL(cpu: CPU):
+    # Shift Left (0xFE)
+    #   Shift D Left; MSB(D)-->DF; 0-->LSB(D)
+    cpu.DF = cpu.D & 0x80
+    cpu.D = (cpu.D << 1) & 0xFE
+    cpu.set_state(states.Fetch())
+
+
+def SHLC(cpu: CPU):
+    # Shift Left with Carry (0x7E)
+    #   Shift D Left; MSB(D)-->DF; DF-->LSB(D)
+    msb = (cpu.D >> 7) & 0x01
+    cpu.D = ((cpu.D << 1) & 0xFE) | cpu.DF
+    cpu.DF = msb
+    cpu.set_state(states.Fetch())
+
+
+def SHR(cpu: CPU):
+    # Shift Right (0xF6)
+    #   Shift D Right; LSB(D)-->DF; 0-->MSB(D)
+    cpu.DF = cpu.D & 0x01
+    cpu.D = (cpu.D >> 1) & 0x7F
+    cpu.set_state(states.Fetch())
+
+
+def SHRC(cpu: CPU):
+    # Shift Right with Carry (0x76)
+    #   Shift D Right; LSB(D)-->DF; DF-->MSB(D)
+    lsb = cpu.D & 0x01
+    cpu.D = (cpu.D >> 1) | ((cpu.DF << 7) & 0x80)
+    cpu.DF = lsb
+    cpu.set_state(states.Fetch())
+
+
 def STR(cpu: CPU, N: int):
     # Store via N (0x5N)
     #   D-->M(R(N))
@@ -169,4 +243,19 @@ def STXD(cpu: CPU):
     #   D-->M(R(X)); R(X)-1
     cpu.M[cpu.R[cpu.X]] = cpu.D
     cpu.decrement_register(cpu.X)
+    cpu.set_state(states.Fetch())
+
+
+def XOR(cpu: CPU):
+    # Exclusive-OR
+    #   M(R(X)) XOR D-->D
+    cpu.D ^= cpu.M[cpu.R[cpu.X]]
+    cpu.set_state(states.Fetch())
+
+
+def XRI(cpu: CPU):
+    # Exclusive-OR Immediate
+    #   M(R(P)) XOR D-->D; R(P)+1
+    cpu.D ^= cpu.M[cpu.R[cpu.P]]
+    cpu.increment_register(cpu.P)
     cpu.set_state(states.Fetch())
