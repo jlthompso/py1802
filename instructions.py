@@ -16,9 +16,11 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x6, 0x0:  IRX(cpu)
         case 0x7, 0x2:  LDXA(cpu)
         case 0x7, 0x3:  STXD(cpu)
+        case 0x7, 0x4:  ADC(cpu)
         case 0x7, 0x6:  SHRC(cpu)
         case 0x7, 0xA:  REQ(cpu)
         case 0x7, 0xB:  SEQ(cpu)
+        case 0x7, 0xC:  ADCI(cpu)
         case 0x7, 0xE:  SHLC(cpu)
         case 0x8, N:    GLO(cpu, N)
         case 0x9, N:    GHI(cpu, N)
@@ -31,13 +33,49 @@ def decode(cpu: CPU, I: int, N: int):
         case 0xF, 0x1:  OR(cpu)
         case 0xF, 0x2:  AND(cpu)
         case 0xF, 0x3:  XOR(cpu)
+        case 0xF, 0x4:  ADD(cpu)
         case 0xF, 0x6:  SHR(cpu)
         case 0xF, 0x8:  LDI(cpu)
         case 0xF, 0x9:  ORI(cpu)
         case 0xF, 0xA:  ANI(cpu)
         case 0xF, 0xB:  XRI(cpu)
+        case 0xF, 0xC:  ADI(cpu)
         case 0xF, 0xE:  SHL(cpu)
         case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
+
+
+def ADC(cpu: CPU):
+    # ADC (0x74)
+    #   M(R(X))+D+DF-->DF,D
+    cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.X]] + cpu.DF) <= 0xFF else 1
+    cpu.D = sum & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def ADCI(cpu: CPU):
+    # ADCI (0x7C)
+    #   M(R(P))+D+DF-->DF,D; R(P)+1
+    cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.P]] + cpu.DF) <= 0xFF else 1
+    cpu.R[cpu.P] += 1
+    cpu.D = sum & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def ADD(cpu: CPU):
+    # ADD (0xF4)
+    #   M(R(X))+D-->DF,D
+    cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.X]]) <= 0xFF else 1
+    cpu.D = sum & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def ADI(cpu: CPU):
+    # ADI (0xFC)
+    #   M(R(P))+D-->DF,D; R(P)+1
+    cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.P]]) <= 0xFF else 1
+    cpu.R[cpu.P] += 1
+    cpu.D = sum & 0xFF
+    cpu.set_state(states.Fetch())
 
 
 def AND(cpu: CPU):

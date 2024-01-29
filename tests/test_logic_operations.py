@@ -4,7 +4,7 @@ from common_test_functions import force_two_cycle_instruction
 from states import Fetch
 
 
-class MemoryReferenceTests(unittest.TestCase):
+class LogicOperationTests(unittest.TestCase):
     def test_OR(self):
         cpu = CPU()
         cpu.run()
