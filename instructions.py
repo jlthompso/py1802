@@ -17,11 +17,15 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x7, 0x2:  LDXA(cpu)
         case 0x7, 0x3:  STXD(cpu)
         case 0x7, 0x4:  ADC(cpu)
+        case 0x7, 0x5:  SDB(cpu)
         case 0x7, 0x6:  SHRC(cpu)
+        case 0x7, 0x7:  SMB(cpu)
         case 0x7, 0xA:  REQ(cpu)
         case 0x7, 0xB:  SEQ(cpu)
         case 0x7, 0xC:  ADCI(cpu)
+        case 0x7, 0xD:  SDBI(cpu)
         case 0x7, 0xE:  SHLC(cpu)
+        case 0x7, 0xF:  SMBI(cpu)
         case 0x8, N:    GLO(cpu, N)
         case 0x9, N:    GHI(cpu, N)
         case 0xA, N:    PLO(cpu, N)
@@ -34,13 +38,17 @@ def decode(cpu: CPU, I: int, N: int):
         case 0xF, 0x2:  AND(cpu)
         case 0xF, 0x3:  XOR(cpu)
         case 0xF, 0x4:  ADD(cpu)
+        case 0xF, 0x5:  SD(cpu)
         case 0xF, 0x6:  SHR(cpu)
+        case 0xF, 0x7:  SM(cpu)
         case 0xF, 0x8:  LDI(cpu)
         case 0xF, 0x9:  ORI(cpu)
         case 0xF, 0xA:  ANI(cpu)
         case 0xF, 0xB:  XRI(cpu)
         case 0xF, 0xC:  ADI(cpu)
+        case 0xF, 0xD:  SDI(cpu)
         case 0xF, 0xE:  SHL(cpu)
+        case 0xF, 0xF:  SMI(cpu)
         case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
 
 
@@ -214,6 +222,40 @@ def REQ(cpu: CPU):
     cpu.set_state(states.Fetch())
 
 
+def SD(cpu: CPU):
+    # Subtract D (0xF5)
+    #   M(R(X))-D-->DF,D
+    cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.X]] + (~cpu.D & 0xFF) + 1) <= 0xFF else 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def SDB(cpu: CPU):
+    # Subtract D with Borrow (0x75)
+    #   M(R(X))-D-(NOT DF)-->DF,D
+    cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.X]] + (~cpu.D & 0xFF) + cpu.DF) <= 0xFF else 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def SDBI(cpu: CPU):
+    # Subtract D with Borrow Immediate (0x7D)
+    #   M(R(P))-D-(NOT DF)-->DF,D; R(P)+1
+    cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.P]] + (~cpu.D & 0xFF) + cpu.DF) <= 0xFF else 1
+    cpu.R[cpu.P] += 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def SDI(cpu: CPU):
+    # SDI (0xFD)
+    #   M(R(P))-D-->DF,D; R(P)+1
+    cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.P]] + (~cpu.D & 0xFF) + 1) <= 0xFF else 1
+    cpu.R[cpu.P] += 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
 def SEP(cpu: CPU, N: int):
     # Set P (0xDN)
     #   N-->P
@@ -266,6 +308,40 @@ def SHRC(cpu: CPU):
     lsb = cpu.D & 0x01
     cpu.D = (cpu.D >> 1) | ((cpu.DF << 7) & 0x80)
     cpu.DF = lsb
+    cpu.set_state(states.Fetch())
+
+
+def SM(cpu: CPU):
+    # Subtract Memory (0xF7)
+    #   D-M(R(X))-->DF,D
+    cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.X]] & 0xFF) + 1) <= 0xFF else 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def SMB(cpu: CPU):
+    # Subtract Memory with Borrow (0x77)
+    #   D-M(R(X))-(NOT DF)-->DF,D
+    cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.X]] & 0xFF) + cpu.DF) <= 0xFF else 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def SMBI(cpu: CPU):
+    # Subtract Memory with Borrow Immediate (0x7F)
+    #   D-M(R(P))-(NOT DF)-->DF,D; R(P)+1
+    cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.P]] & 0xFF) + cpu.DF) <= 0xFF else 1
+    cpu.R[cpu.P] += 1
+    cpu.D = diff & 0xFF
+    cpu.set_state(states.Fetch())
+
+
+def SMI(cpu: CPU):
+    # Subtract Memory Immediate (0xFF)
+    #   D-M(R(P))-->DF,D; R(P)+1
+    cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.P]] & 0xFF) + 1) <= 0xFF else 1
+    cpu.R[cpu.P] += 1
+    cpu.D = diff & 0xFF
     cpu.set_state(states.Fetch())
 
 
