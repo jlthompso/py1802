@@ -11,6 +11,7 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x0, N:    LDN(cpu, N)
         case 0x1, N:    INC(cpu, N)
         case 0x2, N:    DEC(cpu, N)
+        case 0x3, 0x0:  BR(cpu)
         case 0x4, N:    LDA(cpu, N)
         case 0x5, N:    STR(cpu, N)
         case 0x6, 0x0:  IRX(cpu)
@@ -98,6 +99,13 @@ def ANI(cpu: CPU):
     #   M(R(P)) AND D-->R(P)+1
     cpu.D &= cpu.M[cpu.R[cpu.P]]
     cpu.increment_register(cpu.P)
+    cpu.set_state(states.Fetch())
+
+
+def BR(cpu: CPU):
+    # BR (0x30)
+    #   M(R(P))-->R(P).0
+    cpu.R[cpu.P] = (cpu.R[cpu.P] & 0xFF00) | (cpu.M[cpu.R[cpu.P]] & 0xFF)
     cpu.set_state(states.Fetch())
 
 
