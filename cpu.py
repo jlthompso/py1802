@@ -27,6 +27,9 @@ class CPU:
         # setup data interfaces
         self.BUS = 0            # Data Bus, 8b
         self.EF = [0]*4         # External Flags, 4x1b
+        self.N0 = 0
+        self.N1 = 0
+        self.N2 = 0
 
         # setup memory
         self.M = [0]*(2**16)    # Standard RAM and ROM up to 65,536B
@@ -39,6 +42,7 @@ class CPU:
         return self._state
 
     def tick(self) -> None:
+        self.N2 = self.N1 = self.N0 = 0
         self._state.tick()
 
     def reset(self) -> None:

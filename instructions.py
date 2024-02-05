@@ -12,11 +12,13 @@ def decode(cpu: CPU, I: int, N: int):
         case 0x1, N:                        INC(cpu, N)
         case 0x2, N:                        DEC(cpu, N)
         case 0x3, 0x0:                      BR(cpu)
-        case 0x3, 0x4 | 0x5 | 0x6 | 0x7:    BN(cpu, N)
-        case 0x3, 0xC | 0xD | 0xE | 0xF:    BNN(cpu, N)
+        case 0x3, N if 0x4 <= N <= 0x7:     BN(cpu, N)
+        case 0x3, N if 0xC <= N <= 0xF:     BNN(cpu, N)
         case 0x4, N:                        LDA(cpu, N)
         case 0x5, N:                        STR(cpu, N)
         case 0x6, 0x0:                      IRX(cpu)
+        case 0x6, N if 0x1 <= N <= 0x7:     OUT(cpu, N)
+        case 0x6, N if 0x9 <= N <= 0xF:     INP(cpu, N)
         case 0x7, 0x2:                      LDXA(cpu)
         case 0x7, 0x3:                      STXD(cpu)
         case 0x7, 0x4:                      ADC(cpu)
@@ -157,6 +159,17 @@ def INC(cpu: CPU, N: int):
     cpu.set_state(states.Fetch())
 
 
+def INP(cpu: CPU, N: int):
+    # INPUT (0x6N)
+    #   BUS-->M(R(X))
+    #   BUS-->D
+    cpu.N2 = 1 if N & 0x4 else 0
+    cpu.N1 = 1 if N & 0x2 else 0
+    cpu.N0 = 1 if N & 0x1 else 0
+    cpu.M[cpu.R[cpu.X]] = cpu.D = cpu.BUS & 0xFF
+    cpu.set_state(states.Fetch())
+
+
 def IRX(cpu: CPU):
     # Increment Register X (0x60)
     #   R(X)+1
@@ -275,6 +288,18 @@ def ORI(cpu: CPU):
     #   M(R(P)) OR D-->R(P)+1
     cpu.D |= cpu.M[cpu.R[cpu.P]]
     cpu.increment_register(cpu.P)
+    cpu.set_state(states.Fetch())
+
+
+def OUT(cpu: CPU, N: int):
+    # OUTPUT (0x6N)
+    #   M(R(X))-->BUS
+    #   R(X)+1
+    cpu.N2 = 1 if N & 0x4 else 0
+    cpu.N1 = 1 if N & 0x2 else 0
+    cpu.N0 = 1 if N & 0x1 else 0
+    cpu.BUS = cpu.M[cpu.R[cpu.X]] & 0xFF
+    cpu.increment_register(cpu.X)
     cpu.set_state(states.Fetch())
 
 
