@@ -65,7 +65,7 @@ def ADCI(cpu: CPU):
     # ADCI (0x7C)
     #   M(R(P))+D+DF-->DF,D; R(P)+1
     cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.P]] + cpu.DF) <= 0xFF else 1
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.D = sum & 0xFF
     cpu.set_state(states.Fetch())
 
@@ -82,7 +82,7 @@ def ADI(cpu: CPU):
     # ADI (0xFC)
     #   M(R(P))+D-->DF,D; R(P)+1
     cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.P]]) <= 0xFF else 1
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.D = sum & 0xFF
     cpu.set_state(states.Fetch())
 
@@ -162,7 +162,7 @@ def LDI(cpu: CPU):
     # Load Immediate (0xF8)
     #   M(R(P))-->D; R(P)+1
     cpu.D = cpu.M[cpu.R[cpu.P]]
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.set_state(states.Fetch())
 
 
@@ -250,7 +250,7 @@ def SDBI(cpu: CPU):
     # Subtract D with Borrow Immediate (0x7D)
     #   M(R(P))-D-(NOT DF)-->DF,D; R(P)+1
     cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.P]] + (~cpu.D & 0xFF) + cpu.DF) <= 0xFF else 1
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.D = diff & 0xFF
     cpu.set_state(states.Fetch())
 
@@ -259,7 +259,7 @@ def SDI(cpu: CPU):
     # SDI (0xFD)
     #   M(R(P))-D-->DF,D; R(P)+1
     cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.P]] + (~cpu.D & 0xFF) + 1) <= 0xFF else 1
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.D = diff & 0xFF
     cpu.set_state(states.Fetch())
 
@@ -339,7 +339,7 @@ def SMBI(cpu: CPU):
     # Subtract Memory with Borrow Immediate (0x7F)
     #   D-M(R(P))-(NOT DF)-->DF,D; R(P)+1
     cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.P]] & 0xFF) + cpu.DF) <= 0xFF else 1
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.D = diff & 0xFF
     cpu.set_state(states.Fetch())
 
@@ -348,7 +348,7 @@ def SMI(cpu: CPU):
     # Subtract Memory Immediate (0xFF)
     #   D-M(R(P))-->DF,D; R(P)+1
     cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.P]] & 0xFF) + 1) <= 0xFF else 1
-    cpu.R[cpu.P] += 1
+    cpu.increment_program_counter()
     cpu.D = diff & 0xFF
     cpu.set_state(states.Fetch())
 

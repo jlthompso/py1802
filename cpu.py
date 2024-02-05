@@ -51,3 +51,6 @@ class CPU:
     def decrement_register(self, reg: int) -> None:
         # 0x0000 - 1 = 0xFFFF
         self.R[reg] = self.R[reg] - 1 if self.R[reg] - 1 >= 0 else 0xFFFF
+
+    def increment_program_counter(self) -> None:
+        self.increment_register(self.P)
