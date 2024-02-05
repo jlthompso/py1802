@@ -24,13 +24,19 @@ class CPU:
         self.IE = 1             # Interrupt Enable, 1b
         self.Q = 0              # Output Flip-Flop, 1b
 
+        # setup data interfaces
         self.BUS = 0            # Data Bus, 8b
+        self.EF = [0]*4         # External Flags, 4x1b
 
+        # setup memory
         self.M = [0]*(2**16)    # Standard RAM and ROM up to 65,536B
 
     def set_state(self, state: State) -> None:
         self._state = state
         self._state.context = self
+
+    def get_state(self) -> State:
+        return self._state
 
     def tick(self) -> None:
         self._state.tick()
@@ -54,3 +60,11 @@ class CPU:
 
     def increment_program_counter(self) -> None:
         self.increment_register(self.P)
+
+    def get_external_flag(self, id: int) -> int:
+        return self.EF[id - 1]
+
+    def set_external_flag(self, id: int, val: int) -> None:
+        if id not in [1, 2, 3, 4]: raise IndexError
+        if val not in [0, 1]: raise ValueError
+        self.EF[id - 1] = val

@@ -40,6 +40,13 @@ class InternalTests(unittest.TestCase):
         for _ in range(executions): cpu.decrement_register(reg)
         self.assertEqual(expected, cpu.R[reg])  # register value should roll over to 0xFFFF after zero
 
+    def test_set_external_flag(self):
+        cpu = CPU()
+
+        self.assertEqual(0, cpu.get_external_flag(3))
+        cpu.set_external_flag(3, 1)
+        self.assertEqual(1, cpu.get_external_flag(3))
+
 
 if __name__ == '__main__':
     unittest.main()

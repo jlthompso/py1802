@@ -7,54 +7,58 @@ if TYPE_CHECKING:
 
 def decode(cpu: CPU, I: int, N: int):
     match I, N:
-        case 0x0, 0x0:  IDL(cpu)
-        case 0x0, N:    LDN(cpu, N)
-        case 0x1, N:    INC(cpu, N)
-        case 0x2, N:    DEC(cpu, N)
-        case 0x3, 0x0:  BR(cpu)
-        case 0x4, N:    LDA(cpu, N)
-        case 0x5, N:    STR(cpu, N)
-        case 0x6, 0x0:  IRX(cpu)
-        case 0x7, 0x2:  LDXA(cpu)
-        case 0x7, 0x3:  STXD(cpu)
-        case 0x7, 0x4:  ADC(cpu)
-        case 0x7, 0x5:  SDB(cpu)
-        case 0x7, 0x6:  SHRC(cpu)
-        case 0x7, 0x7:  SMB(cpu)
-        case 0x7, 0xA:  REQ(cpu)
-        case 0x7, 0xB:  SEQ(cpu)
-        case 0x7, 0xC:  ADCI(cpu)
-        case 0x7, 0xD:  SDBI(cpu)
-        case 0x7, 0xE:  SHLC(cpu)
-        case 0x7, 0xF:  SMBI(cpu)
-        case 0x8, N:    GLO(cpu, N)
-        case 0x9, N:    GHI(cpu, N)
-        case 0xA, N:    PLO(cpu, N)
-        case 0xB, N:    PHI(cpu, N)
-        case 0xC, 0x4:  NOP(cpu)
-        case 0xD, N:    SEP(cpu, N)
-        case 0xE, N:    SEX(cpu, N)
-        case 0xF, 0x0:  LDX(cpu)
-        case 0xF, 0x1:  OR(cpu)
-        case 0xF, 0x2:  AND(cpu)
-        case 0xF, 0x3:  XOR(cpu)
-        case 0xF, 0x4:  ADD(cpu)
-        case 0xF, 0x5:  SD(cpu)
-        case 0xF, 0x6:  SHR(cpu)
-        case 0xF, 0x7:  SM(cpu)
-        case 0xF, 0x8:  LDI(cpu)
-        case 0xF, 0x9:  ORI(cpu)
-        case 0xF, 0xA:  ANI(cpu)
-        case 0xF, 0xB:  XRI(cpu)
-        case 0xF, 0xC:  ADI(cpu)
-        case 0xF, 0xD:  SDI(cpu)
-        case 0xF, 0xE:  SHL(cpu)
-        case 0xF, 0xF:  SMI(cpu)
+        case 0x0, 0x0:                      IDL(cpu)
+        case 0x0, N:                        LDN(cpu, N)
+        case 0x1, N:                        INC(cpu, N)
+        case 0x2, N:                        DEC(cpu, N)
+        case 0x3, 0x0:                      BR(cpu)
+        case 0x3, 0x4 | 0x5 | 0x6 | 0x7:    BN(cpu, N)
+        case 0x3, 0xC | 0xD | 0xE | 0xF:    BNN(cpu, N)
+        case 0x4, N:                        LDA(cpu, N)
+        case 0x5, N:                        STR(cpu, N)
+        case 0x6, 0x0:                      IRX(cpu)
+        case 0x7, 0x2:                      LDXA(cpu)
+        case 0x7, 0x3:                      STXD(cpu)
+        case 0x7, 0x4:                      ADC(cpu)
+        case 0x7, 0x5:                      SDB(cpu)
+        case 0x7, 0x6:                      SHRC(cpu)
+        case 0x7, 0x7:                      SMB(cpu)
+        case 0x7, 0xA:                      REQ(cpu)
+        case 0x7, 0xB:                      SEQ(cpu)
+        case 0x7, 0xC:                      ADCI(cpu)
+        case 0x7, 0xD:                      SDBI(cpu)
+        case 0x7, 0xE:                      SHLC(cpu)
+        case 0x7, 0xF:                      SMBI(cpu)
+        case 0x8, N:                        GLO(cpu, N)
+        case 0x9, N:                        GHI(cpu, N)
+        case 0xA, N:                        PLO(cpu, N)
+        case 0xB, N:                        PHI(cpu, N)
+        case 0xC, 0x2:                      LBZ(cpu)
+        case 0xC, 0x4:                      NOP(cpu)
+        case 0xC, 0xA:                      LBNZ(cpu)
+        case 0xD, N:                        SEP(cpu, N)
+        case 0xE, N:                        SEX(cpu, N)
+        case 0xF, 0x0:                      LDX(cpu)
+        case 0xF, 0x1:                      OR(cpu)
+        case 0xF, 0x2:                      AND(cpu)
+        case 0xF, 0x3:                      XOR(cpu)
+        case 0xF, 0x4:                      ADD(cpu)
+        case 0xF, 0x5:                      SD(cpu)
+        case 0xF, 0x6:                      SHR(cpu)
+        case 0xF, 0x7:                      SM(cpu)
+        case 0xF, 0x8:                      LDI(cpu)
+        case 0xF, 0x9:                      ORI(cpu)
+        case 0xF, 0xA:                      ANI(cpu)
+        case 0xF, 0xB:                      XRI(cpu)
+        case 0xF, 0xC:                      ADI(cpu)
+        case 0xF, 0xD:                      SDI(cpu)
+        case 0xF, 0xE:                      SHL(cpu)
+        case 0xF, 0xF:                      SMI(cpu)
         case _, _: raise NotImplementedError("Attempted to execute invalid instruction.")
 
 
 def ADC(cpu: CPU):
-    # ADC (0x74)
+    # Add with Carry (0x74)
     #   M(R(X))+D+DF-->DF,D
     cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.X]] + cpu.DF) <= 0xFF else 1
     cpu.D = sum & 0xFF
@@ -62,8 +66,9 @@ def ADC(cpu: CPU):
 
 
 def ADCI(cpu: CPU):
-    # ADCI (0x7C)
-    #   M(R(P))+D+DF-->DF,D; R(P)+1
+    # Add with Carry, Immediate (0x7C)
+    #   M(R(P))+D+DF-->DF,D
+    #   R(P)+1
     cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.P]] + cpu.DF) <= 0xFF else 1
     cpu.increment_program_counter()
     cpu.D = sum & 0xFF
@@ -71,7 +76,7 @@ def ADCI(cpu: CPU):
 
 
 def ADD(cpu: CPU):
-    # ADD (0xF4)
+    # Add (0xF4)
     #   M(R(X))+D-->DF,D
     cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.X]]) <= 0xFF else 1
     cpu.D = sum & 0xFF
@@ -79,8 +84,9 @@ def ADD(cpu: CPU):
 
 
 def ADI(cpu: CPU):
-    # ADI (0xFC)
-    #   M(R(P))+D-->DF,D; R(P)+1
+    # Add Immediate (0xFC)
+    #   M(R(P))+D-->DF,D
+    #   R(P)+1
     cpu.DF = 0 if (sum := cpu.D + cpu.M[cpu.R[cpu.P]]) <= 0xFF else 1
     cpu.increment_program_counter()
     cpu.D = sum & 0xFF
@@ -95,15 +101,37 @@ def AND(cpu: CPU):
 
 
 def ANI(cpu: CPU):
-    # ANI (0xFA)
+    # AND Immediate (0xFA)
     #   M(R(P)) AND D-->R(P)+1
     cpu.D &= cpu.M[cpu.R[cpu.P]]
     cpu.increment_register(cpu.P)
     cpu.set_state(states.Fetch())
 
 
+def BN(cpu: CPU, N: int):
+    # Short Branch if EF(N-3)=1
+    #   IF EF(1/2/3/4)=1, M(R(P))-->R(P).0
+    #   ELSE R(P)+1
+    if cpu.get_external_flag(N - 3) == 1:
+        cpu.R[cpu.P] = (cpu.R[cpu.P] & 0xFF00) | (cpu.M[cpu.R[cpu.P]] & 0xFF)
+    else:
+        cpu.increment_program_counter()
+    cpu.set_state(states.Fetch())
+
+
+def BNN(cpu: CPU, N: int):
+    # Short Branch if EF(N-11)=0
+    #   IF EF(1/2/3/4)=0, M(R(P))-->R(P).0
+    #   ELSE R(P)+1
+    if cpu.get_external_flag(N - 11) == 0:
+        cpu.R[cpu.P] = (cpu.R[cpu.P] & 0xFF00) | (cpu.M[cpu.R[cpu.P]] & 0xFF)
+    else:
+        cpu.increment_program_counter()
+    cpu.set_state(states.Fetch())
+
+
 def BR(cpu: CPU):
-    # BR (0x30)
+    # Unconditional Short Branch (0x30)
     #   M(R(P))-->R(P).0
     cpu.R[cpu.P] = (cpu.R[cpu.P] & 0xFF00) | (cpu.M[cpu.R[cpu.P]] & 0xFF)
     cpu.set_state(states.Fetch())
@@ -150,9 +178,48 @@ def GLO(cpu: CPU, N: int):
     cpu.set_state(states.Fetch())
 
 
+def LBNZ(cpu: CPU):
+    # Long Branch if D Not 0
+    #   IF D NOT 0,M(R(P))-->R(P).1
+    #       M(R(P)+1)-->R(P).0
+    #   ELSE R(P)+2
+    if isinstance(cpu.get_state(), states.Execute):
+        # S1
+        cpu.increment_program_counter()
+        cpu.set_state(states.ForceExecute())
+    else:
+        # force S1
+        if cpu.D != 0:
+            cpu.R[cpu.P] = ((cpu.M[cpu.R[cpu.P] - 1] & 0xFF) << 8) | (cpu.M[cpu.R[cpu.P]] & 0xFF)
+        else:
+            cpu.increment_program_counter()
+
+        cpu.set_state(states.Fetch())
+
+
+def LBZ(cpu: CPU):
+    # Long Branch if D=0
+    #   IF D=0,M(R(P))-->R(P).1
+    #       M(R(P)+1)-->R(P).0
+    #   ELSE R(P)+2
+    if isinstance(cpu.get_state(), states.Execute):
+        # S1
+        cpu.increment_program_counter()
+        cpu.set_state(states.ForceExecute())
+    else:
+        # force S1
+        if cpu.D == 0:
+            cpu.R[cpu.P] = ((cpu.M[cpu.R[cpu.P] - 1] & 0xFF) << 8) | (cpu.M[cpu.R[cpu.P]] & 0xFF)
+        else:
+            cpu.increment_program_counter()
+
+        cpu.set_state(states.Fetch())
+
+
 def LDA(cpu: CPU, N: int):
     # Load Advance (0x4N):
-    #   M(R(N))-->D; R(N)+1
+    #   M(R(N))-->D
+    #   R(N)+1
     cpu.D = cpu.M[cpu.R[N]]
     cpu.increment_register(N)
     cpu.set_state(states.Fetch())
@@ -160,7 +227,8 @@ def LDA(cpu: CPU, N: int):
 
 def LDI(cpu: CPU):
     # Load Immediate (0xF8)
-    #   M(R(P))-->D; R(P)+1
+    #   M(R(P))-->D
+    #   R(P)+1
     cpu.D = cpu.M[cpu.R[cpu.P]]
     cpu.increment_program_counter()
     cpu.set_state(states.Fetch())
@@ -182,7 +250,8 @@ def LDX(cpu: CPU):
 
 def LDXA(cpu: CPU):
     # Load via X and Advance (0x72):
-    #   M(R(X))-->D; R(X)+1
+    #   M(R(X))-->D
+    #   R(X)+1
     cpu.D = cpu.M[cpu.R[cpu.X]]
     cpu.increment_register(cpu.X)
     cpu.set_state(states.Fetch())
@@ -202,7 +271,7 @@ def OR(cpu: CPU):
 
 
 def ORI(cpu: CPU):
-    # ORI (0xF9)
+    # OR Immediate (0xF9)
     #   M(R(P)) OR D-->R(P)+1
     cpu.D |= cpu.M[cpu.R[cpu.P]]
     cpu.increment_register(cpu.P)
@@ -248,7 +317,8 @@ def SDB(cpu: CPU):
 
 def SDBI(cpu: CPU):
     # Subtract D with Borrow Immediate (0x7D)
-    #   M(R(P))-D-(NOT DF)-->DF,D; R(P)+1
+    #   M(R(P))-D-(NOT DF)-->DF,D
+    #   R(P)+1
     cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.P]] + (~cpu.D & 0xFF) + cpu.DF) <= 0xFF else 1
     cpu.increment_program_counter()
     cpu.D = diff & 0xFF
@@ -256,8 +326,9 @@ def SDBI(cpu: CPU):
 
 
 def SDI(cpu: CPU):
-    # SDI (0xFD)
-    #   M(R(P))-D-->DF,D; R(P)+1
+    # Subtract D Immediate (0xFD)
+    #   M(R(P))-D-->DF,D
+    #   R(P)+1
     cpu.DF = 0 if (diff := cpu.M[cpu.R[cpu.P]] + (~cpu.D & 0xFF) + 1) <= 0xFF else 1
     cpu.increment_program_counter()
     cpu.D = diff & 0xFF
@@ -287,7 +358,8 @@ def SEX(cpu: CPU, N: int):
 
 def SHL(cpu: CPU):
     # Shift Left (0xFE)
-    #   Shift D Left; MSB(D)-->DF; 0-->LSB(D)
+    #   Shift D Left; MSB(D)-->DF
+    #   0-->LSB(D)
     cpu.DF = cpu.D & 0x80
     cpu.D = (cpu.D << 1) & 0xFE
     cpu.set_state(states.Fetch())
@@ -295,7 +367,8 @@ def SHL(cpu: CPU):
 
 def SHLC(cpu: CPU):
     # Shift Left with Carry (0x7E)
-    #   Shift D Left; MSB(D)-->DF; DF-->LSB(D)
+    #   Shift D Left; MSB(D)-->DF
+    #   DF-->LSB(D)
     msb = (cpu.D >> 7) & 0x01
     cpu.D = ((cpu.D << 1) & 0xFE) | cpu.DF
     cpu.DF = msb
@@ -304,7 +377,8 @@ def SHLC(cpu: CPU):
 
 def SHR(cpu: CPU):
     # Shift Right (0xF6)
-    #   Shift D Right; LSB(D)-->DF; 0-->MSB(D)
+    #   Shift D Right; LSB(D)-->DF
+    #   0-->MSB(D)
     cpu.DF = cpu.D & 0x01
     cpu.D = (cpu.D >> 1) & 0x7F
     cpu.set_state(states.Fetch())
@@ -312,7 +386,8 @@ def SHR(cpu: CPU):
 
 def SHRC(cpu: CPU):
     # Shift Right with Carry (0x76)
-    #   Shift D Right; LSB(D)-->DF; DF-->MSB(D)
+    #   Shift D Right; LSB(D)-->DF
+    #   DF-->MSB(D)
     lsb = cpu.D & 0x01
     cpu.D = (cpu.D >> 1) | ((cpu.DF << 7) & 0x80)
     cpu.DF = lsb
@@ -337,7 +412,8 @@ def SMB(cpu: CPU):
 
 def SMBI(cpu: CPU):
     # Subtract Memory with Borrow Immediate (0x7F)
-    #   D-M(R(P))-(NOT DF)-->DF,D; R(P)+1
+    #   D-M(R(P))-(NOT DF)-->DF,D
+    #   R(P)+1
     cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.P]] & 0xFF) + cpu.DF) <= 0xFF else 1
     cpu.increment_program_counter()
     cpu.D = diff & 0xFF
@@ -346,7 +422,8 @@ def SMBI(cpu: CPU):
 
 def SMI(cpu: CPU):
     # Subtract Memory Immediate (0xFF)
-    #   D-M(R(P))-->DF,D; R(P)+1
+    #   D-M(R(P))-->DF,D
+    #   R(P)+1
     cpu.DF = 0 if (diff := cpu.D + (~cpu.M[cpu.R[cpu.P]] & 0xFF) + 1) <= 0xFF else 1
     cpu.increment_program_counter()
     cpu.D = diff & 0xFF
@@ -362,7 +439,8 @@ def STR(cpu: CPU, N: int):
 
 def STXD(cpu: CPU):
     # Store via X and Decrement (0x73)
-    #   D-->M(R(X)); R(X)-1
+    #   D-->M(R(X))
+    #   R(X)-1
     cpu.M[cpu.R[cpu.X]] = cpu.D
     cpu.decrement_register(cpu.X)
     cpu.set_state(states.Fetch())
@@ -377,7 +455,8 @@ def XOR(cpu: CPU):
 
 def XRI(cpu: CPU):
     # Exclusive-OR Immediate
-    #   M(R(P)) XOR D-->D; R(P)+1
+    #   M(R(P)) XOR D-->D
+    #   R(P)+1
     cpu.D ^= cpu.M[cpu.R[cpu.P]]
     cpu.increment_register(cpu.P)
     cpu.set_state(states.Fetch())

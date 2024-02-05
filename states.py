@@ -73,6 +73,7 @@ class Fetch(State):
 
 class ForceExecute(State):
     def tick(self) -> None:
+        decode(self.context, self.context.I, self.context.N)
         self.context.set_state(Fetch())
 
     def reset(self) -> None:
