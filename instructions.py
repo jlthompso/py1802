@@ -306,14 +306,14 @@ def OUT(cpu: CPU, N: int):
 def PHI(cpu: CPU, N: int):
     # Put High Register N
     #   D-->R(N).1
-    cpu.R[N] &= ((cpu.D << 8) & 0xFF00) | 0x00FF
+    cpu.R[N] = (cpu.R[N] & 0x00FF) | (cpu.D << 8)
     cpu.set_state(states.Fetch())
 
 
 def PLO(cpu: CPU, N: int):
     # Put Low Register N
     #   D-->R(N).0
-    cpu.R[N] &= 0xFF00 + cpu.D
+    cpu.R[N] = (cpu.R[N] & 0xFF00) | cpu.D
     cpu.set_state(states.Fetch())
 
 

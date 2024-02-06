@@ -72,3 +72,7 @@ class CPU:
         if id not in [1, 2, 3, 4]: raise IndexError
         if val not in [0, 1]: raise ValueError
         self.EF[id - 1] = val
+
+    def toggle_external_flag(self, id: int) -> None:
+        if id not in [1, 2, 3, 4]: raise IndexError
+        self.EF[id - 1] = int(not self.EF[id - 1])
