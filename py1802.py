@@ -1,18 +1,14 @@
+import io
+import sys
+import argparse
 from cpu import CPU
 import keyboard
-import sys
 
 
-opcodes = [0x90, 0xB6, 0xF8, 0x29, 0xA6, 0xE0, 0x64, 0x00, 0xE6, 0x3F, 0x09, 0x6C, 0x64, 0x37, 0x0D, 0xF8, 0x60,0xA6,
-           0xE0, 0x64, 0x01, 0x3F, 0x15, 0xE6, 0x6C, 0x64, 0x37, 0x1A, 0xE0, 0x64, 0x02, 0xE6, 0x3F, 0x20, 0x6C, 0x64,
-           0x37, 0x24, 0x26, 0x26, 0x46, 0xC4, 0xC4, 0x26, 0x56, 0x64, 0x7A, 0xCA, 0x00, 0x20, 0x7B, 0x30, 0x20]
-
-
-def main():
+def main(source_file: io.TextIOWrapper) -> None:
     cpu = CPU()
-    for i, opcode in enumerate(opcodes): cpu.M[i] = opcode  # load program into memory
+    load_mem(source_file, cpu)
 
-    # run program starting at memory address 0x00
     cpu.run()
     while True:
         cpu.tick()
@@ -49,6 +45,24 @@ def main():
             cpu.run()
 
 
+def load_mem(source_file: io.TextIOWrapper, cpu: CPU) -> None:
+    for line in source_file:
+        if line.startswith(';'): continue
+        tokens = line.split()
+        if len(tokens) < 2: raise SyntaxError("Lines must contain at least memory address and opcode.")
+
+        try:
+            addr = int(tokens[0], 16)
+            opcodes = [int(tokens[1][i:i + 2], 16) for i in range(0, len(tokens[1]), 2)]
+        except ValueError:
+            print(f'Invalid syntax: {line}')
+            exit(1)
+
+        for i, opcode in enumerate(opcodes):
+            cpu.M[addr + i] = opcode
+    source_file.close()
+
+
 def flush_input():
     try:
         import msvcrt
@@ -66,4 +80,8 @@ def exit(val):
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Execute assembly code on an emulated RCA 1802 processor.')
+    parser.add_argument('infile', type=argparse.FileType('r'))
+    args = parser.parse_args()
+    main(args.infile)
+    exit(0)

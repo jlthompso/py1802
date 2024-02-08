@@ -1,0 +1,41 @@
+; TEST ALU OPS
+; COPIED FROM https://en.wikipedia.org/wiki/RCA_1802
+0000 90         GHI 0     ; SET UP R6
+0001 B6         PHI 6
+0002 F829       LDI DOIT  ; FOR INPUT OF OPCODE
+0004 A6         PLO 6
+0005 E0         SEX 0     ; (X=0 ALREADY)
+0006 6400       OUT 4,00  ; ANNOUNCE US READY
+0008 E6         SEX 6     ; NOW X=6
+0009 3F09       BN4 *     ; WAIT FOR IT
+000B 6C         INP 4     ; OK, GET IT
+000C 64         OUT 4     ; AND ECHO TO DISPLAY
+000D 370D       B4 *      ; WAIT FOR RELEASE
+000F F860       LDI #60   ; NOW GET READY FOR
+0011 A6         PLO 6     ; FIRST OPERAND
+0012 E0         SEX 0     ; SAY SO
+0013 6401       OUT 4,01
+0015 3F15       BN4 *
+0017 E6         SEX 6     ; TAKE IT IN AND ECHO
+0018 6C         INP 4     ; (TO 0060)
+0019 64         OUT 4     ; (ALSO INCREMENT R6)
+001A 371A       B4 *
+001C E0         SEX 0     ; DITTO SECOND OPERAND
+001D 6402       OUT 4,02
+001F E6         SEX 6
+0020 3F20 LOOP: BN4 *     ; WAIT FOR IT
+0022 6C         INP 4     ; GET IT (NOTE: X=6)
+0023 64         OUT 4     ; ECHO IT
+0024 3724       B4 *      ; WAIT FOR RELEASE
+0026 26         DEC 6     ; BACK UP R6 TO 0060
+0027 26         DEC 6
+0028 46         LDA 6     ; GET 1ST OPERAND TO D
+0029 C4   DOIT: NOP       ; DO OPERATION
+002A C4         NOP       ; (SPARE)
+002B 26         DEC 6     ; BACK TO 0060
+002C 56         STR 6     ; OUTPUT RESULT
+002D 64         OUT 4     ; (X=6 STILL)
+002E 7A         REQ       ; TURN OFF Q
+002F CA0020     LBNZ LOOP ; THEN IF ZERO,
+0032 7B         SEQ       ; TURN IT ON AGAIN
+0033 3020       BR LOOP   ; REPEAT IN ANY CASE
