@@ -34,6 +34,8 @@ class CPU:
         # setup memory
         self.M = [0]*(2**16)    # Standard RAM and ROM up to 65,536B
 
+        self.running = False
+
     def set_state(self, state: State) -> None:
         self._state = state
         self._state.context = self
@@ -47,12 +49,15 @@ class CPU:
 
     def reset(self) -> None:
         self._state.reset()
+        self.running = False
 
     def run(self) -> None:
         self._state.run()
+        self.running = True
 
     def pause(self) -> None:
         self._state.pause()
+        self.running = False
 
     def increment_register(self, reg: int) -> None:
         # 0xFFFF + 1 = 0x000
